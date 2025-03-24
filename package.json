@@ -12,7 +12,7 @@
         "vitest": "^3.0.9"
     },
     "description": "Detect modules with circular dependencies when bundling with rspack.",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "engines": {
         "node": ">=18.0.0"
     },

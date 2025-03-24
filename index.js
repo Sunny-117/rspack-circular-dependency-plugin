@@ -79,7 +79,8 @@ class RspackCircularDependencyPlugin {
                         if (this.options.failOnError) {
                             compilation.errors.push(new Error(message));
                         } else {
-                            compilation.warnings.push({ name: "CircularDependencyWarning", message });
+                            compilation.warnings.push(new Error(message));
+                            // compilation.warnings.push({ name: "CircularDependencyWarning", message: '11' });
                         }
                     }
                 }

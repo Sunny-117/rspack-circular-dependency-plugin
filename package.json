@@ -28,9 +28,9 @@
     },
     "files": [
         "index.js",
-        "out/index.d.ts"
+        "types/index.d.ts"
     ],
-    "types": "out/index.d.ts",
+    "types": "types/index.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Sunny-117/rspack-circular-dependency-plugin.git"

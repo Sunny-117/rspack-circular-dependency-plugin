@@ -1,7 +1,6 @@
 # Rspack Circular Dependency Plugin
 
-Note that this is a rudimentary re-implementation of `circular-dependency-plugin` to fulfill our needs at Kialo.
-It is not intended to support all configuration options (namely `cwd` is not implemented) and is not tested on other people's code.
+It is intended to support all configuration options of circular-dependency-plugin (currently, namely `cwd` is not implemented)
 
 ## The Plugin
 

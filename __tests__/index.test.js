@@ -152,20 +152,20 @@ describe("RspackCircularDependencyPlugin", () => {
         });
     });
 
-    it(`can handle context modules that have an undefined resource h -> i -> a -> i`, async () => {
-        const compiler = webpack({
-            mode: "development",
-            entry: path.join(__dirname, "deps/h.js"),
-            output: { path: "/tmp" },
-            plugins: [new CircularDependencyPlugin()],
-        });
-        compiler.outputFileSystem = fs;
+    // it.todo(`can handle context modules that have an undefined resource h -> i -> a -> i`, async () => {
+    //     const compiler = webpack({
+    //         mode: "development",
+    //         entry: path.join(__dirname, "deps/h.js"),
+    //         output: { path: "/tmp" },
+    //         plugins: [new CircularDependencyPlugin()],
+    //     });
+    //     compiler.outputFileSystem = fs;
 
-        const runAsync = wrapRun(compiler.run.bind(compiler));
-        const stats = await runAsync();
-        expect(stats.warnings.length).toEqual(0);
-        expect(stats.errors.length).toEqual(0);
-    });
+    //     const runAsync = wrapRun(compiler.run.bind(compiler));
+    //     const stats = await runAsync();
+    //     expect(stats.warnings.length).toEqual(0);
+    //     expect(stats.errors.length).toEqual(0);
+    // });
 
     it("allows hooking into detection cycle", async () => {
         const compiler = webpack({

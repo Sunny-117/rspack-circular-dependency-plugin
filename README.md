@@ -109,7 +109,7 @@ module.exports = {
 
 [MIT](./LICENSE) License © [Sunny-117](https://github.com/Sunny-117)
 
-## Thanks for [kialo](https://github.com/kialo/rspack-circular-dependency-plugin)
+## Thanks to [kialo](https://github.com/kialo/rspack-circular-dependency-plugin)
 
 <!-- Badges -->
 

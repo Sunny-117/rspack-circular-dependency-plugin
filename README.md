@@ -97,3 +97,6 @@ module.exports = {
     ],
 };
 ```
+
+
+## Thanks for [kialo](https://github.com/kialo/rspack-circular-dependency-plugin)

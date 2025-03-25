@@ -45,92 +45,77 @@ class RspackCircularDependencyPlugin {
     apply(compiler) {
         compiler.hooks.afterCompile.tap(PluginTitle, (compilation) => {
             this.options.onStart?.({ compilation });
-            const stats = compilation.getStats().toJson();
+            const stats = compilation.getStats().toJson({ modules: true, chunkModules: false });
 
-            /** @type {ModuleMap} */
-            const modulesById = Object.fromEntries(
-                (stats.modules ?? [])
-                    .filter(
-                        (module) =>
-                            !module.orphan &&
-                            !!module.name &&
-                            module.name.match(this.options.include) &&
-                            !module.name.match(this.options.exclude),
-                    )
-                    .map((module) => [module.id, module]),
-            );
-
-            for (const module of Object.keys(modulesById)) {
-                const maybeCyclicalPathsList = this.isCyclic(module, module, modulesById);
-
-                if (maybeCyclicalPathsList) {
-                    if (this.options.onDetected) {
-                        try {
-                            this.options.onDetected({
-                                paths: maybeCyclicalPathsList,
-                                compilation,
-                            });
-                        } catch (/** @type {any} **/ err) {
-                            compilation.errors.push(err);
-                        }
-                    } else {
-                        // mark warnings or errors on rspack compilation
-                        const message = BASE_ERROR.concat(maybeCyclicalPathsList.join(" -> "));
-                        if (this.options.failOnError) {
-                            compilation.errors.push(new Error(message));
-                        } else {
-                            compilation.warnings.push(new Error(message));
-                            // compilation.warnings.push({ name: "CircularDependencyWarning", message: '11' });
-                        }
-                    }
+            /** @type {Map<string, import('@rspack/core').StatsModule>} */
+            const modulesById = new Map();
+            for (const module of stats.modules ?? []) {
+                if (!module.orphan && module.name && module.name.match(this.options.include) && !module.name.match(this.options.exclude)) {
+                    modulesById.set(module.id, module);
                 }
             }
 
+            const checkedModules = new Set();
+            for (const module of modulesById.keys()) {
+                if (!checkedModules.has(module)) {
+                    const maybeCyclicalPathsList = this.isCyclic(module, module, modulesById, new Set());
+                    if (maybeCyclicalPathsList) {
+                        checkedModules.add(module);
+                        this.reportCycle(maybeCyclicalPathsList, compilation);
+                    }
+                }
+            }
+            
             this.options.onEnd?.({ compilation });
         });
     }
 
     /**
-     *
      * @param {string} initialModule
      * @param {string} currentModule
-     * @param {ModuleMap} modulesById
-     * @param {Record<string, boolean>} seenModules
+     * @param {Map<string, import('@rspack/core').StatsModule>} modulesById
+     * @param {Set<string>} seenModules
      * @returns {string[] | undefined}
      */
-    isCyclic(initialModule, currentModule, modulesById, seenModules = {}) {
-        // Add the current module to the seen modules cache
-        const currentModuleName = modulesById[currentModule]?.name;
-        seenModules[currentModule] = true;
+    isCyclic(initialModule, currentModule, modulesById, seenModules = new Set()) {
+        if (seenModules.has(currentModule)) return;
+        seenModules.add(currentModule);
 
-        // Iterate over the current modules dependencies
-        for (const reason of modulesById[currentModule].reasons ?? []) {
-            const reasonModule = reason.moduleId ? modulesById[reason.moduleId] : undefined;
+        const currentModuleName = modulesById.get(currentModule)?.name;
+        for (const reason of modulesById.get(currentModule)?.reasons ?? []) {
+            const reasonModuleId = reason.moduleId;
+            if (!reasonModuleId || !modulesById.has(reasonModuleId)) continue;
 
-            if (!reasonModule?.id) {
-                continue;
+            if (this.options.allowAsyncCycles && reason.type?.match(/dynamic import|import\(\)/)) continue;
+
+            if (reasonModuleId === initialModule && currentModule !== initialModule) {
+                return [normalizePath(modulesById.get(reasonModuleId)?.name) ?? reasonModuleId, normalizePath(currentModuleName) ?? currentModule];
             }
 
-            if (this.options.allowAsyncCycles && reason.type?.match(/dynamic import|import\(\)/)) {
-                continue;
+            const cyclePath = this.isCyclic(initialModule, reasonModuleId, modulesById, seenModules);
+            if (cyclePath) {
+                return [...cyclePath, normalizePath(currentModuleName) ?? currentModule];
             }
+        }
+    }
 
-            if (reasonModule.id in seenModules) {
-                if (reasonModule.id === initialModule && currentModule !== initialModule) {
-                    // Initial module has a circular dependency
-                    return [
-                        normalizePath(reasonModule?.name) ?? reasonModule.id,
-                        normalizePath(currentModuleName) ?? currentModule,
-                    ];
-                }
-                // Found a cycle, but not for this module
-                continue;
+    /**
+     * @param {string[]} paths
+     * @param {import('@rspack/core').Compilation} compilation
+     */
+    reportCycle(paths, compilation) {
+        if (this.options.onDetected) {
+            try {
+                this.options.onDetected({ paths, compilation });
+            } catch (err) {
+                compilation.errors.push(err);
             }
-
-            const maybeCyclicalPathsList = this.isCyclic(initialModule, reasonModule.id, modulesById, seenModules);
-
-            if (maybeCyclicalPathsList) {
-                return [...maybeCyclicalPathsList, normalizePath(currentModuleName) ?? currentModule];
+        } else {
+            const message = BASE_ERROR.concat(paths.join(" -> "));
+            if (this.options.failOnError) {
+                compilation.errors.push(new Error(message));
+            } else {
+                compilation.warnings.push(new Error(message));
             }
         }
     }

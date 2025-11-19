@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This package is deprecated. Please use [rspack.CircularDependencyRspackPlugin](https://rspack.rs/zh/plugins/rspack/circular-dependency-rspack-plugin#circulardependencyrspackplugin) instead, which is the official plugin for rspack, performance is improved.
+
 # Rspack Circular Dependency Plugin
 
 [![npm version][npm-version-src]][npm-version-href]

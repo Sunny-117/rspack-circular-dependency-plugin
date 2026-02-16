@@ -222,6 +222,67 @@ describe("RspackCircularDependencyPlugin", () => {
         ]);
     });
 
+    it("catches errors thrown in onDetected callback", async () => {
+        const compiler = webpack({
+            mode: "development",
+            entry: path.join(__dirname, "deps/d.js"),
+            output: { path: "/tmp" },
+            plugins: [
+                new CircularDependencyPlugin({
+                    onDetected() {
+                        throw new Error("onDetected error");
+                    },
+                }),
+            ],
+        });
+        compiler.outputFileSystem = fs;
+
+        const runAsync = wrapRun(compiler.run.bind(compiler));
+        const stats = await runAsync();
+
+        expect(stats.errors.length).toBeGreaterThan(0);
+        expect(stats.errors[0].message).toMatch(/onDetected error/);
+    });
+
+    it("allows async cycles when allowAsyncCycles is true", async () => {
+        const compiler = webpack({
+            mode: "development",
+            entry: path.join(__dirname, "deps/async-cycle/index.js"),
+            output: { path: "/tmp" },
+            plugins: [
+                new CircularDependencyPlugin({
+                    allowAsyncCycles: true,
+                }),
+            ],
+        });
+        compiler.outputFileSystem = fs;
+
+        const runAsync = wrapRun(compiler.run.bind(compiler));
+        const stats = await runAsync();
+
+        expect(stats.warnings).toHaveLength(0);
+        expect(stats.errors).toHaveLength(0);
+    });
+
+    it("detects async cycles when allowAsyncCycles is false", async () => {
+        const compiler = webpack({
+            mode: "development",
+            entry: path.join(__dirname, "deps/async-cycle/index.js"),
+            output: { path: "/tmp" },
+            plugins: [
+                new CircularDependencyPlugin({
+                    allowAsyncCycles: false,
+                }),
+            ],
+        });
+        compiler.outputFileSystem = fs;
+
+        const runAsync = wrapRun(compiler.run.bind(compiler));
+        const stats = await runAsync();
+
+        expect(stats.warnings.length).toBeGreaterThan(0);
+    });
+
     it("detects circular dependencies from d -> e -> f -> g -> e", async () => {
         const compiler = webpack({
             mode: "development",

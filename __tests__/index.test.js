@@ -1,7 +1,7 @@
 const path = require("path");
 const MemoryFS = require("memory-fs");
 const CircularDependencyPlugin = require("../dist/index.cjs");
-const webpack = require("@rspack/core");
+const rspack = require("@rspack/core");
 
 const wrapRun = (run) => {
     return () =>
@@ -42,7 +42,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("detects circular dependencies from a -> b -> c -> b", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/a.js"),
             output: { path: "/tmp" },
@@ -62,7 +62,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("detects circular dependencies from d -> e -> f -> g -> e", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -85,7 +85,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("uses errors instead of warnings with failOnError", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -112,7 +112,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("can exclude cyclical deps from being output", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -131,7 +131,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("can include only specific cyclical deps in the output", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -153,7 +153,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it.todo(`can handle context modules that have an undefined resource h -> i -> a -> i`, async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/h.js"),
             output: { path: "/tmp" },
@@ -168,7 +168,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("allows hooking into detection cycle", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/nocycle.js"),
             output: { path: "/tmp" },
@@ -198,7 +198,7 @@ describe("RspackCircularDependencyPlugin", () => {
     it("allows overriding all behavior with onDetected", async () => {
         let cyclesPaths;
 
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -223,7 +223,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("catches errors thrown in onDetected callback", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -245,7 +245,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("allows async cycles when allowAsyncCycles is true", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/async-cycle/index.js"),
             output: { path: "/tmp" },
@@ -265,7 +265,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("detects async cycles when allowAsyncCycles is false", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/async-cycle/index.js"),
             output: { path: "/tmp" },
@@ -284,7 +284,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("detects circular dependencies from d -> e -> f -> g -> e", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/d.js"),
             output: { path: "/tmp" },
@@ -312,7 +312,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("can detect circular dependencies when module concatenation is not used", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/module-concat-plugin-compat/index.js"),
             optimization: {
@@ -337,7 +337,7 @@ describe("RspackCircularDependencyPlugin", () => {
     });
 
     it("does not detect circular dependencies in concatenated modules", async () => {
-        const compiler = webpack({
+        const compiler = rspack({
             mode: "development",
             entry: path.join(__dirname, "deps/module-concat-plugin-compat/index.js"),
             optimization: {
@@ -355,9 +355,9 @@ describe("RspackCircularDependencyPlugin", () => {
         expect(stats.errors).toHaveLength(0);
     });
 
-    describe("ignores self referencing webpack internal dependencies", () => {
+    describe("ignores self referencing rspack internal dependencies", () => {
         it("ignores this references", async () => {
-            const compiler = webpack({
+            const compiler = rspack({
                 mode: "development",
                 entry: path.join(__dirname, "deps", "self-referencing", "uses-this.js"),
                 output: { path: "/tmp" },
@@ -373,7 +373,7 @@ describe("RspackCircularDependencyPlugin", () => {
         });
 
         it("ignores module.exports references", async () => {
-            const compiler = webpack({
+            const compiler = rspack({
                 mode: "development",
                 entry: path.join(__dirname, "deps", "self-referencing", "uses-exports.js"),
                 output: { path: "/tmp" },
@@ -389,7 +389,7 @@ describe("RspackCircularDependencyPlugin", () => {
         });
 
         it("ignores self references", async () => {
-            const compiler = webpack({
+            const compiler = rspack({
                 mode: "development",
                 entry: path.join(__dirname, "deps", "self-referencing", "imports-self.js"),
                 output: { path: "/tmp" },
@@ -405,7 +405,7 @@ describe("RspackCircularDependencyPlugin", () => {
         });
 
         it("works with typescript", async () => {
-            const compiler = webpack({
+            const compiler = rspack({
                 mode: "development",
                 entry: path.join(__dirname, "deps", "ts", "a.tsx"),
                 output: { path: "/tmp" },

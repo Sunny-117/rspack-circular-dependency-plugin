@@ -1,6 +1,6 @@
 const path = require("path");
 const MemoryFS = require("memory-fs");
-const CircularDependencyPlugin = require("../index");
+const CircularDependencyPlugin = require("../dist/index.cjs");
 const webpack = require("@rspack/core");
 
 const wrapRun = (run) => {

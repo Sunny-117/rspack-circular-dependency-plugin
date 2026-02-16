@@ -5,8 +5,11 @@ export default defineConfig({
         globals: true,
         coverage: {
             provider: 'v8',
-            include: ['index.js'],
+            include: ['dist/**'],
+            exclude: ['dist/*.map', 'dist/*.d.*'],
             reporter: ['text', 'html'],
+            reportsDirectory: './coverage',
+            all: true,
         }
     }
-}) 
+})

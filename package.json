@@ -1,6 +1,6 @@
 {
     "name": "rspack-circular-dependency-plugin",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Detect modules with circular dependencies when bundling with rspack.",
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",

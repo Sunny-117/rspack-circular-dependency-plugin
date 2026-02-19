@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm test:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(pnpm build)"
+    ]
+  }
+}
